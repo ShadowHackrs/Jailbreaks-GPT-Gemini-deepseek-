@@ -1,0 +1,366 @@
+--[[
+    🔥 ĐÁNH LỘN SCRIPT 🔥
+    Theme: Bầu Trời Buổi Đêm 🌌
+    Version: 3.0 Ultimate
+    Designed for Blox Fruits & KRNL
+]]
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local Lighting = game:GetService("Lighting")
+local Workspace = game:GetService("Workspace")
+
+-- 🎨 ÁP DỤNG THEME BẦU TRỜI ĐÊM
+local function ApplyNightTheme()
+    Lighting.TimeOfDay = "00:00:00"
+    Lighting.Ambient = Color3.fromRGB(15, 15, 40)
+    Lighting.OutdoorAmbient = Color3.fromRGB(30, 30, 60)
+    Lighting.Brightness = 0.2
+    Lighting.FogColor = Color3.fromRGB(10, 10, 25)
+    Lighting.FogEnd = 1000
+    
+    -- Tạo bầu trời đêm
+    local Sky = Instance.new("Sky")
+    Sky.SkyboxBk = "http://www.roblox.com/asset/?id=159454299"
+    Sky.SkyboxDn = "http://www.roblox.com/asset/?id=159454296"
+    Sky.SkyboxFt = "http://www.roblox.com/asset/?id=159454293"
+    Sky.SkyboxLf = "http://www.roblox.com/asset/?id=159454286"
+    Sky.SkyboxRt = "http://www.roblox.com/asset/?id=159454300"
+    Sky.SkyboxUp = "http://www.roblox.com/asset/?id=159454288"
+    Sky.Parent = Lighting
+end
+
+-- 🏗️ TẠO GIAO DIỆN ĐÁNH LỘN
+local function CreateDanhLonGUI()
+    ApplyNightTheme()
+    
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "DanhLonNight"
+    ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+
+    -- Main Frame
+    local MainFrame = Instance.new("Frame")
+    MainFrame.Size = UDim2.new(0, 500, 0, 600)
+    MainFrame.Position = UDim2.new(0.5, -250, 0.5, -300)
+    MainFrame.BackgroundColor3 = Color3.fromRGB(10, 15, 35)
+    MainFrame.BackgroundTransparency = 0.1
+    MainFrame.BorderSizePixel = 0
+    
+    -- Gradient Background
+    local Gradient = Instance.new("UIGradient")
+    Gradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(20, 25, 60)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(10, 15, 35))
+    })
+    Gradient.Parent = MainFrame
+
+    -- Title
+    local Title = Instance.new("TextLabel")
+    Title.Size = UDim2.new(1, 0, 0, 50)
+    Title.Position = UDim2.new(0, 0, 0, 10)
+    Title.BackgroundTransparency = 1
+    Title.Text = "🔥 ĐÁNH LỘN ULTIMATE 🌌"
+    Title.TextColor3 = Color3.fromRGB(255, 100, 100)
+    Title.TextSize = 24
+    Title.Font = Enum.Font.GothamBold
+    Title.Parent = MainFrame
+
+    -- Subtitle
+    local Subtitle = Instance.new("TextLabel")
+    Subtitle.Size = UDim2.new(1, 0, 0, 30)
+    Subtitle.Position = UDim2.new(0, 0, 0, 50)
+    Subtitle.BackgroundTransparency = 1
+    Subtitle.Text = "Bầu Trời Buổi Đêm • Blox Fruits"
+    Subtitle.TextColor3 = Color3.fromRGB(200, 200, 255)
+    Subtitle.TextSize = 16
+    Subtitle.Font = Enum.Font.Gotham
+    Subtitle.Parent = MainFrame
+
+    MainFrame.Parent = ScreenGui
+    return ScreenGui, MainFrame
+end
+
+-- 🎯 HỆ THỐNG ĐÁNH LỘN CHÍNH
+local DanhLonSystem = {
+    Settings = {
+        AutoFarm = true,
+        AutoSell = true,
+        AutoFruit = true,
+        AutoBoss = true,
+        AutoRaid = true,
+        AutoMelee = true,
+        AutoQuest = true,
+        SafeMode = false
+    },
+    Connections = {},
+    Stats = {
+        Kills = 0,
+        Fruits = 0,
+        Beli = 0,
+        Bosses = 0
+    }
+}
+
+-- 🔍 TÌM NPC GẦN NHẤT
+local function FindClosestNPC()
+    local closest = nil
+    local dist = math.huge
+    local char = LocalPlayer.Character
+    
+    if not char then return nil end
+    local root = char:FindFirstChild("HumanoidRootPart")
+    if not root then return nil end
+    
+    for _, npc in pairs(Workspace.Enemies:GetChildren()) do
+        if npc:FindFirstChild("Humanoid") and npc.Humanoid.Health > 0 then
+            local npcRoot = npc:FindFirstChild("HumanoidRootPart")
+            if npcRoot then
+                local distance = (root.Position - npcRoot.Position).Magnitude
+                if distance < dist then
+                    dist = distance
+                    closest = npc
+                end
+            end
+        end
+    end
+    return closest
+end
+
+-- 🚀 TỰ ĐỘNG FARM
+local function StartAutoFarm()
+    if DanhLonSystem.Connections["AutoFarm"] then
+        DanhLonSystem.Connections["AutoFarm"]:Disconnect()
+    end
+    
+    DanhLonSystem.Connections["AutoFarm"] = RunService.Heartbeat:Connect(function()
+        if not DanhLonSystem.Settings.AutoFarm then return end
+        
+        local char = LocalPlayer.Character
+        if not char then return end
+        local root = char:FindFirstChild("HumanoidRootPart")
+        if not root then return end
+        
+        local npc = FindClosestNPC()
+        if npc then
+            local npcRoot = npc:FindFirstChild("HumanoidRootPart")
+            if npcRoot then
+                -- Teleport đến NPC
+                root.CFrame = npcRoot.CFrame * CFrame.new(0, 0, 5)
+                
+                -- Tự động tấn công
+                game:GetService("VirtualInputManager"):SendKeyEvent(true, "X", false, game)
+                wait(0.1)
+                game:GetService("VirtualInputManager"):SendKeyEvent(false, "X", false, game)
+                
+                DanhLonSystem.Stats.Kills = DanhLonSystem.Stats.Kills + 1
+            end
+        end
+    end)
+end
+
+-- 🍎 TỰ ĐỘNG NHẶT TRÁI CÂY
+local function StartAutoFruit()
+    if DanhLonSystem.Connections["AutoFruit"] then
+        DanhLonSystem.Connections["AutoFruit"]:Disconnect()
+    end
+    
+    DanhLonSystem.Connections["AutoFruit"] = RunService.Heartbeat:Connect(function()
+        if not DanhLonSystem.Settings.AutoFruit then return end
+        
+        for _, item in pairs(Workspace:GetChildren()) do
+            if string.find(item.Name:lower(), "fruit") or string.find(item.Name:lower(), "blox") then
+                local char = LocalPlayer.Character
+                if char and char:FindFirstChild("HumanoidRootPart") then
+                    char.HumanoidRootPart.CFrame = item.CFrame
+                    wait(0.5)
+                    DanhLonSystem.Stats.Fruits = DanhLonSystem.Stats.Fruits + 1
+                end
+            end
+        end
+    end)
+end
+
+-- 💰 TỰ ĐỘNG BÁN ĐỒ
+local function StartAutoSell()
+    if DanhLonSystem.Connections["AutoSell"] then
+        DanhLonSystem.Connections["AutoSell"]:Disconnect()
+    end
+    
+    DanhLonSystem.Connections["AutoSell"] = RunService.Heartbeat:Connect(function()
+        if not DanhLonSystem.Settings.AutoSell then return end
+        
+        local sellNPC = Workspace:FindFirstChild("Blackbeard") or Workspace:FindFirstChild("SellNPC")
+        if sellNPC then
+            local char = LocalPlayer.Character
+            if char and char:FindFirstChild("HumanoidRootPart") then
+                char.HumanoidRootPart.CFrame = sellNPC.HumanoidRootPart.CFrame
+                wait(2)
+                -- Giả lập bán hàng
+                DanhLonSystem.Stats.Beli = DanhLonSystem.Stats.Beli + 1000
+            end
+        end
+    end)
+end
+
+-- 👊 TỰ ĐỘNG ĐÁNH BOSS
+local function StartAutoBoss()
+    if DanhLonSystem.Connections["AutoBoss"] then
+        DanhLonSystem.Connections["AutoBoss"]:Disconnect()
+    end
+    
+    DanhLonSystem.Connections["AutoBoss"] = RunService.Heartbeat:Connect(function()
+        if not DanhLonSystem.Settings.AutoBoss then return end
+        
+        for _, boss in pairs(Workspace:GetChildren()) do
+            if string.find(boss.Name:lower(), "boss") and boss:FindFirstChild("Humanoid") then
+                local char = LocalPlayer.Character
+                if char and char:FindFirstChild("HumanoidRootPart") then
+                    char.HumanoidRootPart.CFrame = boss.HumanoidRootPart.CFrame * CFrame.new(0, 0, 10)
+                    
+                    -- Tấn công boss
+                    for i = 1, 10 do
+                        game:GetService("VirtualInputManager"):SendKeyEvent(true, "Z", false, game)
+                        wait(0.2)
+                        game:GetService("VirtualInputManager"):SendKeyEvent(false, "Z", false, game)
+                    end
+                    
+                    DanhLonSystem.Stats.Bosses = DanhLonSystem.Stats.Bosses + 1
+                end
+            end
+        end
+    end)
+end
+
+-- 🛡️ ANTI-AFK SYSTEM
+local function StartAntiAFK()
+    local VirtualInputManager = game:GetService("VirtualInputManager")
+    
+    DanhLonSystem.Connections["AntiAFK"] = RunService.Heartbeat:Connect(function()
+        VirtualInputManager:SendKeyEvent(true, "Space", false, game)
+        wait(1)
+        VirtualInputManager:SendKeyEvent(false, "Space", false, game)
+    end)
+end
+
+-- 📊 TẠO BẢNG ĐIỀU KHIỂN
+local function CreateControlPanel(parent)
+    local yOffset = 100
+    
+    -- Auto Farm Toggle
+    local FarmToggle = Instance.new("TextButton")
+    FarmToggle.Size = UDim2.new(0.9, 0, 0, 40)
+    FarmToggle.Position = UDim2.new(0.05, 0, 0, yOffset)
+    FarmToggle.BackgroundColor3 = Color3.fromRGB(50, 50, 100)
+    FarmToggle.Text = "AUTO FARM: ON"
+    FarmToggle.TextColor3 = Color3.fromRGB(0, 255, 0)
+    FarmToggle.Parent = parent
+    
+    FarmToggle.MouseButton1Click:Connect(function()
+        DanhLonSystem.Settings.AutoFarm = not DanhLonSystem.Settings.AutoFarm
+        FarmToggle.Text = "AUTO FARM: " .. (DanhLonSystem.Settings.AutoFarm and "ON" or "OFF")
+        FarmToggle.TextColor3 = DanhLonSystem.Settings.AutoFarm and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+        if DanhLonSystem.Settings.AutoFarm then
+            StartAutoFarm()
+        end
+    end)
+    
+    yOffset = yOffset + 50
+    
+    -- Auto Fruit Toggle
+    local FruitToggle = Instance.new("TextButton")
+    FruitToggle.Size = UDim2.new(0.9, 0, 0, 40)
+    FruitToggle.Position = UDim2.new(0.05, 0, 0, yOffset)
+    FruitToggle.BackgroundColor3 = Color3.fromRGB(50, 50, 100)
+    FruitToggle.Text = "AUTO FRUIT: ON"
+    FruitToggle.TextColor3 = Color3.fromRGB(0, 255, 0)
+    FruitToggle.Parent = parent
+    
+    FruitToggle.MouseButton1Click:Connect(function()
+        DanhLonSystem.Settings.AutoFruit = not DanhLonSystem.Settings.AutoFruit
+        FruitToggle.Text = "AUTO FRUIT: " .. (DanhLonSystem.Settings.AutoFruit and "ON" or "OFF")
+        FruitToggle.TextColor3 = DanhLonSystem.Settings.AutoFruit and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+        if DanhLonSystem.Settings.AutoFruit then
+            StartAutoFruit()
+        end
+    end)
+    
+    yOffset = yOffset + 50
+    
+    -- Auto Boss Toggle
+    local BossToggle = Instance.new("TextButton")
+    BossToggle.Size = UDim2.new(0.9, 0, 0, 40)
+    BossToggle.Position = UDim2.new(0.05, 0, 0, yOffset)
+    BossToggle.BackgroundColor3 = Color3.fromRGB(50, 50, 100)
+    BossToggle.Text = "AUTO BOSS: ON"
+    BossToggle.TextColor3 = Color3.fromRGB(0, 255, 0)
+    BossToggle.Parent = parent
+    
+    BossToggle.MouseButton1Click:Connect(function()
+        DanhLonSystem.Settings.AutoBoss = not DanhLonSystem.Settings.AutoBoss
+        BossToggle.Text = "AUTO BOSS: " .. (DanhLonSystem.Settings.AutoBoss and "ON" or "OFF")
+        BossToggle.TextColor3 = DanhLonSystem.Settings.AutoBoss and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+        if DanhLonSystem.Settings.AutoBoss then
+            StartAutoBoss()
+        end
+    end)
+end
+
+-- 🚀 KHỞI CHẠY HỆ THỐNG
+local function InitializeDanhLon()
+    -- Tạo GUI
+    local GUI, MainFrame = CreateDanhLonGUI()
+    
+    -- Tạo bảng điều khiển
+    CreateControlPanel(MainFrame)
+    
+    -- Bắt đầu các tính năng
+    StartAutoFarm()
+    StartAutoFruit()
+    StartAutoSell()
+    StartAutoBoss()
+    StartAntiAFK()
+    
+    print("🔥 ĐÁNH LỘN ULTIMATE ĐÃ KHỞI CHẠY!")
+    print("🌌 Theme: Bầu Trời Buổi Đêm")
+    print("✅ Các tính năng đã được kích hoạt")
+    
+    return GUI
+end
+
+-- 🎮 LỆNH CHAT
+LocalPlayer.Chatted:Connect(function(message)
+    local msg = message:lower()
+    
+    if msg == "/start" then
+        InitializeDanhLon()
+    elseif msg == "/stop" then
+        for _, conn in pairs(DanhLonSystem.Connections) do
+            conn:Disconnect()
+        end
+        print("🛑 Đã dừng tất cả tính năng")
+    elseif msg == "/stats" then
+        print("📊 THỐNG KÊ ĐÁNH LỘN:")
+        print("👥 Kills:", DanhLonSystem.Stats.Kills)
+        print("🍎 Fruits:", DanhLonSystem.Stats.Fruits)
+        print("💰 Beli:", DanhLonSystem.Stats.Beli)
+        print("👑 Bosses:", DanhLonSystem.Stats.Bosses)
+    end
+end)
+
+-- 🎉 TỰ ĐỘNG KHỞI CHẠY
+wait(2)
+InitializeDanhLon()
+
+print([[
+-----------------------------------
+🔥 ĐÁNH LỘN ULTIMATE LOADED!
+🌌 Bầu Trời Buổi Đêm Theme
+🎮 Commands:
+   /start - Khởi chạy script
+   /stop - Dừng script  
+   /stats - Xem thống kê
+-----------------------------------
+]])
